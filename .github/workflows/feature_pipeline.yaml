@@ -1,13 +1,8 @@
 name: hourly-taxi-demand-feature-pipeline
 
 on:
-   schedule:
-    - cron: '0 * * * *'
-  push:
-    branches:
-      - main
-      
-  workflow_dispatch:
+  schedule:
+   - cron: '0 * * * *'
 
 jobs:
 
