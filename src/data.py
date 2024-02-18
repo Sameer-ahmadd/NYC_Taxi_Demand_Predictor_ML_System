@@ -1,4 +1,4 @@
-from paths import RAW_DATA_DIR, TRANSFORMED_DATA_DIR
+from src.paths import RAW_DATA_DIR, TRANSFORMED_DATA_DIR
 from tqdm import tqdm
 import requests
 import pandas as pd

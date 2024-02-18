@@ -3,7 +3,7 @@ from typing import Tuple
 
 import pandas as pd
 import sys
-sys.path.append("..\src")
+#sys.path.append("..\src")
 
 def train_test_split(
     df: pd.DataFrame,

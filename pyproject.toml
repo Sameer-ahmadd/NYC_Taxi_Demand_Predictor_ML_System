@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "taxi-demand-predictor"
+name = "src"
 version = "0.1.0"
 description = ""
 authors = ["Sameer Ahmad <samimughal7786@gmail.com>"]
@@ -21,6 +21,7 @@ lightgbm = "4.1.0"
 twofish = "^0.3.0"
 hopsworks = "3.4.4"
 config = "^0.5.1"
+setuptools = "^69.1.0"
 
 
 [build-system]

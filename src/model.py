@@ -1,6 +1,6 @@
 import pandas as pd
-import sys
-sys.path.append("..\src")
+#import sys
+#sys.path.append("..\src")
 from sklearn.preprocessing import FunctionTransformer
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.pipeline import make_pipeline, Pipeline

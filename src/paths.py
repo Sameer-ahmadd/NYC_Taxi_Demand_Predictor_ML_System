@@ -1,7 +1,7 @@
 from pathlib import Path
 import os
-import sys
-sys.path.append("..\src")
+#import sys
+#sys.path.append("..\src")
 
 PARENT_DIR = Path(__file__).parent.resolve().parent
 DATA_DIR = PARENT_DIR / 'data'
