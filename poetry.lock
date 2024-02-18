@@ -455,6 +455,17 @@ traitlets = ">=4"
 test = ["pytest"]
 
 [[package]]
+name = "config"
+version = "0.5.1"
+description = "A hierarchical, easy-to-use, powerful configuration module for Python"
+optional = false
+python-versions = "*"
+files = [
+    {file = "config-0.5.1-py2.py3-none-any.whl", hash = "sha256:79ffa009ff2663cc8ca29e56bcec031c044609d4bafaa4f884132a413101ce84"},
+    {file = "config-0.5.1.zip", hash = "sha256:2dd4a03aa383d30711d5a3325a1858de225328d61950a85be5b74c100f63016d"},
+]
+
+[[package]]
 name = "confluent-kafka"
 version = "1.9.0"
 description = "Confluent's Python client for Apache Kafka"
@@ -3577,4 +3588,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.9,<3.9.7 || >3.9.7,<3.10"
-content-hash = "84acd8fd5921d5af2fdff838511fe06c3010df8407370e3d3c8c770fbfc3db4a"
+content-hash = "422dfbb258860d9530f1cd3fc4d97353a5bbd7644741f84c2c5ff2bc4079f9cc"

@@ -20,6 +20,7 @@ python-dotenv = "1.0.0"
 lightgbm = "4.1.0"
 twofish = "^0.3.0"
 hopsworks = "3.4.4"
+config = "^0.5.1"
 
 
 [build-system]
