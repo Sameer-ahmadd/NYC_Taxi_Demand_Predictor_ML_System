@@ -1,0 +1,1 @@
+best_params={'num_leaves': 67, 'feature_fraction': 0.7536411141451993, 'bagging_fraction': 0.32793187690951753, 'min_child_samples': 31}
