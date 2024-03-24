@@ -19,3 +19,7 @@ if not Path(RAW_DATA_DIR).exists():
 
 if not Path(TRANSFORMED_DATA_DIR).exists():
     os.mkdir(TRANSFORMED_DATA_DIR)
+
+if not Path(MODELS_DIR).exists():
+    os.mkdir(MODELS_DIR)
+

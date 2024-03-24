@@ -112,3 +112,57 @@ def load_model_from_registry():
     model = joblib.load(Path(model_dir) / 'model.pkl')
 
     return model
+
+
+def load_predictions_from_store(
+    from_pickup_hour: datetime,
+    to_pickup_hour: datetime
+) -> pd.DataFrame:
+    """
+    Connects to the feature store and retrieves model predictions for all
+    `pickup_location_id`s and for the time period from `from_pickup_hour`
+    to `to_pickup_hour`
+
+    Args:
+        from_pickup_hour (datetime): min datetime (rounded hour) for which we want to get
+        predictions
+
+        to_pickup_hour (datetime): max datetime (rounded hour) for which we want to get
+        predictions
+
+    Returns:
+        pd.DataFrame: 3 columns:
+            - `pickup_location_id`
+            - `predicted_demand`
+            - `pickup_hour`
+    """
+    from src.config import FEATURE_VIEW_PREDICTIONS_METADATA
+    from src.feature_store_api import get_or_create_feature_view
+
+    # get pointer to the feature view
+    predictions_fv = get_or_create_feature_view(
+        FEATURE_VIEW_PREDICTIONS_METADATA)
+
+    # get data from the feature view
+    print(
+        f'Fetching predictions for `pickup_hours` between {from_pickup_hour}  and {to_pickup_hour}')
+    predictions = predictions_fv.get_batch_data(
+        start_time=from_pickup_hour - timedelta(days=1),
+        end_time=to_pickup_hour + timedelta(days=1)
+    )
+
+    # make sure datetimes are UTC aware
+    predictions['pickup_hour'] = pd.to_datetime(
+        predictions['pickup_hour'], utc=True)
+    from_pickup_hour = pd.to_datetime(from_pickup_hour, utc=True)
+    to_pickup_hour = pd.to_datetime(to_pickup_hour, utc=True)
+
+    # make sure we keep only the range we want
+    predictions = predictions[predictions.pickup_hour.between(
+        from_pickup_hour, to_pickup_hour)]
+
+    # sort by `pick_up_hour` and `pickup_location_id`
+    predictions.sort_values(
+        by=['pickup_hour', 'pickup_location_id'], inplace=True)
+
+    return predictions
