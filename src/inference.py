@@ -7,6 +7,7 @@ import numpy as np
 
 import src.config as config
 
+
 def get_hopsworks_project() -> hopsworks.project.Project:
 
     return hopsworks.login(
@@ -14,10 +15,12 @@ def get_hopsworks_project() -> hopsworks.project.Project:
         api_key_value=config.HOPSWORKS_API_KEY
     )
 
+
 def get_feature_store() -> FeatureStore:
-    
-     project = get_hopsworks_project()
-     return project.get_feature_store()
+
+    project = get_hopsworks_project()
+    return project.get_feature_store()
+
 
 def get_model_predictions(model, features: pd.DataFrame) -> pd.DataFrame:
     """"""
@@ -27,13 +30,12 @@ def get_model_predictions(model, features: pd.DataFrame) -> pd.DataFrame:
     results = pd.DataFrame()
     results['pickup_location_id'] = features['pickup_location_id'].values
     results['predicted_demand'] = predictions.round(0)
-    
+
     return results
 
 
-
 def load_batch_of_features_from_store(
-    current_date: datetime,    
+    current_date: datetime,
 ) -> pd.DataFrame:
     """Fetches the batch of features used by the ML system at `current_date`
     Args:
@@ -61,13 +63,14 @@ def load_batch_of_features_from_store(
         start_time=(fetch_data_from - timedelta(days=1)),
         end_time=(fetch_data_to + timedelta(days=1))
     )
-    ts_data = ts_data[ts_data.pickup_hour.between(fetch_data_from, fetch_data_to)]
+    ts_data = ts_data[ts_data.pickup_hour.between(
+        fetch_data_from, fetch_data_to)]
 
     # validate we are not missing data in the feature store
     location_ids = ts_data['pickup_location_id'].unique()
     assert len(ts_data) == n_features*len(location_ids), \
         "Time-series data is not complete. Make sure your feature pipeline is up and runnning."
-    
+
     # sort data by location and time
     ts_data.sort_values(by=['pickup_location_id', 'pickup_hour'], inplace=True)
     # print(f'{ts_data=}')
@@ -82,7 +85,8 @@ def load_batch_of_features_from_store(
     # numpy arrays to Pandas dataframes
     features = pd.DataFrame(
         x,
-        columns=[f'rides_previous_{i+1}_hour' for i in reversed(range(n_features))]
+        columns=[
+            f'rides_previous_{i+1}_hour' for i in reversed(range(n_features))]
     )
     features['pickup_hour'] = current_date
     features['pickup_location_id'] = location_ids
@@ -92,7 +96,7 @@ def load_batch_of_features_from_store(
 
 
 def load_model_from_registry():
-    
+
     import joblib
     from pathlib import Path
 
@@ -102,9 +106,9 @@ def load_model_from_registry():
     model = model_registry.get_model(
         name=config.MODEL_NAME,
         version=config.MODEL_VERSION,
-    )  
-    
+    )
+
     model_dir = model.download()
-    model = joblib.load(Path(model_dir)  / 'model.pkl')
-       
+    model = joblib.load(Path(model_dir) / 'model.pkl')
+
     return model
