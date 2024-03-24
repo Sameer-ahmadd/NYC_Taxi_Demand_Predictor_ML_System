@@ -63,17 +63,21 @@ def load_batch_of_features_from_store(
         start_time=(fetch_data_from - timedelta(days=1)),
         end_time=(fetch_data_to + timedelta(days=1))
     )
+
+    # Ensure `pickup_hour` is of type datetime64[ns, UTC]
+    ts_data['pickup_hour'] = pd.to_datetime(ts_data['pickup_hour'], utc=True)
+
+    # Filter data between `fetch_data_from` and `fetch_data_to`
     ts_data = ts_data[ts_data.pickup_hour.between(
-        fetch_data_from, fetch_data_to)]
+        pd.Timestamp(fetch_data_from, tz='UTC'), pd.Timestamp(fetch_data_to, tz='UTC'))]
 
     # validate we are not missing data in the feature store
     location_ids = ts_data['pickup_location_id'].unique()
     assert len(ts_data) == n_features*len(location_ids), \
-        "Time-series data is not complete. Make sure your feature pipeline is up and runnning."
+        "Time-series data is not complete. Make sure your feature pipeline is up and running."
 
     # sort data by location and time
     ts_data.sort_values(by=['pickup_location_id', 'pickup_hour'], inplace=True)
-    # print(f'{ts_data=}')
 
     # transpose time-series data as a feature vector, for each `pickup_location_id`
     x = np.ndarray(shape=(len(location_ids), n_features), dtype=np.float32)
