@@ -1,11 +1,13 @@
 from datetime import datetime, timedelta
 
 import hopsworks
-from hsfs.feature_store import FeatureStore
+# from hsfs.feature_store import FeatureStore
 import pandas as pd
 import numpy as np
 
 import src.config as config
+from src.feature_store_api import get_feature_store, get_or_create_feature_view
+from src.config import FEATURE_VIEW_METADATA
 
 
 def get_hopsworks_project() -> hopsworks.project.Project:
@@ -14,12 +16,6 @@ def get_hopsworks_project() -> hopsworks.project.Project:
         project=config.HOPSWORKS_PROJECT_NAME,
         api_key_value=config.HOPSWORKS_API_KEY
     )
-
-
-def get_feature_store() -> FeatureStore:
-
-    project = get_hopsworks_project()
-    return project.get_feature_store()
 
 
 def get_model_predictions(model, features: pd.DataFrame) -> pd.DataFrame:
@@ -35,49 +31,47 @@ def get_model_predictions(model, features: pd.DataFrame) -> pd.DataFrame:
 
 
 def load_batch_of_features_from_store(
-    current_date: datetime,
+    current_date: pd.Timestamp,
 ) -> pd.DataFrame:
     """Fetches the batch of features used by the ML system at `current_date`
+
     Args:
         current_date (datetime): datetime of the prediction for which we want
         to get the batch of features
+
     Returns:
-        pd.DataFrame: 3 columns:
+        pd.DataFrame: 4 columns:
             - `pickup_hour`
             - `rides`
             - `pickup_location_id`
+            - `pickpu_ts`
     """
     n_features = config.N_FEATURES
 
-    feature_store = get_feature_store()
+    feature_view = get_or_create_feature_view(FEATURE_VIEW_METADATA)
 
-    # read time-series data from the feature store
-    fetch_data_to = current_date - timedelta(hours=1)
+    # fetch data from the feature store
     fetch_data_from = current_date - timedelta(days=28)
-    print(f'Fetching data from {fetch_data_from} to {fetch_data_to}')
-    feature_view = feature_store.get_feature_view(
-        name=config.FEATURE_VIEW_NAME,
-        version=config.FEATURE_VIEW_VERSION
-    )
+    fetch_data_to = current_date - timedelta(hours=1)
+
+    # add plus minus margin to make sure we do not drop any observation
     ts_data = feature_view.get_batch_data(
-        start_time=(fetch_data_from - timedelta(days=1)),
-        end_time=(fetch_data_to + timedelta(days=1))
+        start_time=fetch_data_from - timedelta(days=1),
+        end_time=fetch_data_to + timedelta(days=1)
     )
 
-    # Ensure `pickup_hour` is of type datetime64[ns, UTC]
-    ts_data['pickup_hour'] = pd.to_datetime(ts_data['pickup_hour'], utc=True)
-
-    # Filter data between `fetch_data_from` and `fetch_data_to`
-    ts_data = ts_data[ts_data.pickup_hour.between(
-        pd.Timestamp(fetch_data_from, tz='UTC'), pd.Timestamp(fetch_data_to, tz='UTC'))]
-
-    # validate we are not missing data in the feature store
-    location_ids = ts_data['pickup_location_id'].unique()
-    assert len(ts_data) == n_features*len(location_ids), \
-        "Time-series data is not complete. Make sure your feature pipeline is up and running."
+    # filter data to the time period we are interested in
+    pickup_ts_from = int(fetch_data_from.timestamp() * 1000)
+    pickup_ts_to = int(fetch_data_to.timestamp() * 1000)
+    ts_data = ts_data[ts_data.pickup_ts.between(pickup_ts_from, pickup_ts_to)]
 
     # sort data by location and time
     ts_data.sort_values(by=['pickup_location_id', 'pickup_hour'], inplace=True)
+
+    # validate we are not missing data in the feature store
+    location_ids = ts_data['pickup_location_id'].unique()
+    assert len(ts_data) == config.N_FEATURES * len(location_ids), \
+        "Time-series data is not complete. Make sure your feature pipeline is up and runnning."
 
     # transpose time-series data as a feature vector, for each `pickup_location_id`
     x = np.ndarray(shape=(len(location_ids), n_features), dtype=np.float32)
