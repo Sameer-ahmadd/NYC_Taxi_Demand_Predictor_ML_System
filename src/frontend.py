@@ -1,4 +1,4 @@
-import zipfile 
+import zipfile
 from datetime import datetime, timedelta
 
 import requests
@@ -76,11 +76,12 @@ def _load_batch_of_features_from_store(current_date: datetime) -> pd.DataFrame:
     """
     return load_batch_of_features_from_store(current_date)
 
+
 @st.cache_data
 def _load_predictions_from_store(
     from_pickup_hour: datetime,
     to_pickup_hour: datetime
-    ) -> pd.DataFrame:
+) -> pd.DataFrame:
     """
     Wrapped version of src.inference.load_predictions_from_store, so we
     can add Streamlit caching
@@ -96,6 +97,7 @@ def _load_predictions_from_store(
         pd.DataFrame: 2 columns: pickup_location_id, predicted_demand
     """
     return load_predictions_from_store(from_pickup_hour, to_pickup_hour)
+
 
 with st.spinner(text="Downloading shape file to plot taxi zones"):
     geo_df = load_shape_data_file()
@@ -113,9 +115,11 @@ with st.spinner(text="Fetching model predictions from the store"):
 # Here we are checking the predictions for the current hour have already been computed
 # and are available
 next_hour_predictions_ready = \
-    False if predictions_df[predictions_df.pickup_hour == current_date].empty else True
+    False if predictions_df[predictions_df.pickup_hour ==
+                            current_date].empty else True
 prev_hour_predictions_ready = \
-    False if predictions_df[predictions_df.pickup_hour == (current_date - timedelta(hours=1))].empty else True
+    False if predictions_df[predictions_df.pickup_hour == (
+        current_date - timedelta(hours=1))].empty else True
 
 # breakpoint()
 
@@ -125,9 +129,11 @@ if next_hour_predictions_ready:
 
 elif prev_hour_predictions_ready:
     # predictions for current hour are not available, so we use previous hour predictions
-    predictions_df = predictions_df[predictions_df.pickup_hour == (current_date - timedelta(hours=1))]
+    predictions_df = predictions_df[predictions_df.pickup_hour == (
+        current_date - timedelta(hours=1))]
     current_date = current_date - timedelta(hours=1)
-    st.subheader('⚠️ The most recent data is not yet available. Using last hour predictions')
+    st.subheader(
+        '⚠️ The most recent data is not yet available. Using last hour predictions')
 
 else:
     raise Exception('Features are not available for the last 2 hours. Is your feature \
@@ -146,16 +152,17 @@ with st.spinner(text="Preparing data to plot"):
         """
         f = float(val-minval) / (maxval-minval)
         return tuple(f*(b-a)+a for (a, b) in zip(startcolor, stopcolor))
-        
+
     df = pd.merge(geo_df, predictions_df,
                   right_on='pickup_location_id',
                   left_on='LocationID',
                   how='inner')
-    
+
     BLACK, GREEN = (0, 0, 0), (0, 255, 0)
     df['color_scaling'] = df['predicted_demand']
     max_pred, min_pred = df['color_scaling'].max(), df['color_scaling'].min()
-    df['fill_color'] = df['color_scaling'].apply(lambda x: pseudocolor(x, min_pred, max_pred, BLACK, GREEN))
+    df['fill_color'] = df['color_scaling'].apply(
+        lambda x: pseudocolor(x, min_pred, max_pred, BLACK, GREEN))
     progress_bar.progress(3/N_STEPS)
 
 with st.spinner(text="Generating NYC Map"):
@@ -184,7 +191,8 @@ with st.spinner(text="Generating NYC Map"):
         pickable=True,
     )
 
-    tooltip = {"html": "<b>Zone:</b> [{LocationID}]{zone} <br /> <b>Predicted rides:</b> {predicted_demand}"}
+    tooltip = {
+        "html": "<b>Zone:</b> [{LocationID}]{zone} <br /> <b>Predicted rides:</b> {predicted_demand}"}
 
     r = pdk.Deck(
         layers=[geojson],
@@ -203,7 +211,7 @@ with st.spinner(text="Fetching batch of features used in the last run"):
 
 
 with st.spinner(text="Plotting time-series data"):
-   
+
     predictions_df = df
 
     row_indices = np.argsort(predictions_df['predicted_demand'].values)[::-1]
@@ -220,7 +228,7 @@ with st.spinner(text="Plotting time-series data"):
         # plot predictions
         prediction = predictions_df['predicted_demand'].iloc[row_id]
         st.metric(label="Predicted demand", value=int(prediction))
-        
+
         # plot figure
         # generate figure
         fig = plot_one_sample(
@@ -230,6 +238,7 @@ with st.spinner(text="Plotting time-series data"):
             predictions=pd.Series(predictions_df['predicted_demand']),
             display_title=False,
         )
-        st.plotly_chart(fig, theme="streamlit", use_container_width=True, width=1000)
-        
+        st.plotly_chart(fig, theme="streamlit",
+                        use_container_width=True, width=1000)
+
     progress_bar.progress(6/N_STEPS)
