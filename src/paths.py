@@ -1,7 +1,7 @@
 from pathlib import Path
 import os
-#import sys
-#sys.path.append("..\src")
+# import sys
+# sys.path.append("..\src")
 
 PARENT_DIR = Path(__file__).parent.resolve().parent
 DATA_DIR = PARENT_DIR / 'data'
@@ -23,3 +23,5 @@ if not Path(TRANSFORMED_DATA_DIR).exists():
 if not Path(MODELS_DIR).exists():
     os.mkdir(MODELS_DIR)
 
+if not Path(DATA_CACHE_DIR).exists():
+    os.mkdir(DATA_CACHE_DIR)

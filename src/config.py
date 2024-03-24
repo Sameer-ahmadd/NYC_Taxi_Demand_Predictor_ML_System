@@ -59,7 +59,7 @@ MODEL_NAME = "taxi_demand_predictor"
 FEATURE_GROUP_MODEL_PREDICTIONS = 'model_predictions_feature_group'
 FEATURE_GROUP_PREDICTIONS_METADATA = FeatureGroupConfig(
     name='model_predictions_feature_group',
-    version=4,
+    version=1,
     description="Predictions generate by our production model",
     primary_key=['pickup_location_id', 'pickup_ts'],
     event_time='pickup_ts',
@@ -69,12 +69,12 @@ FEATURE_GROUP_PREDICTIONS_METADATA = FeatureGroupConfig(
 FEATURE_VIEW_MODEL_PREDICTIONS = 'model_predictions_feature_view'
 FEATURE_VIEW_PREDICTIONS_METADATA = FeatureViewConfig(
     name='model_predictions_feature_view',
-    version=4,
+    version=1,
     feature_group=FEATURE_GROUP_PREDICTIONS_METADATA,
 )
 
 MONITORING_FV_NAME = 'monitoring_feature_view'
-MONITORING_FV_VERSION = 4
+MONITORING_FV_VERSION = 1
 
 # number of historical values our model needs to generate predictions
 N_FEATURES = 24 * 28
