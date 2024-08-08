@@ -51,7 +51,7 @@ def load_batch_of_features_from_store(
     feature_view = get_or_create_feature_view(FEATURE_VIEW_METADATA)
 
     # fetch data from the feature store
-    fetch_data_from = current_date - timedelta(days=29)
+    fetch_data_from = current_date - timedelta(days=28)
     fetch_data_to = current_date - timedelta(hours=1)
 
     # add plus minus margin to make sure we do not drop any observation
