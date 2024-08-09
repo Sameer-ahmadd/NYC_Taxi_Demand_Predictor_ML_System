@@ -76,13 +76,20 @@ def split_data(
     features_and_target: pd.DataFrame,
     cutoff_date: pd.Timestamp,
 ) -> Tuple[pd.DataFrame, pd.Series, pd.DataFrame, pd.Series]:
-    # Ensure consistent timezone handling
+    # Convert the appropriate column to a DatetimeIndex if necessary
+    if not isinstance(features_and_target.index, pd.DatetimeIndex):
+        # Assuming 'pickup_hour' is the datetime column you want to use as index
+        features_and_target.set_index('pickup_hour', inplace=True)
+        features_and_target.index = pd.to_datetime(features_and_target.index)
+
+    # Now you can safely apply timezone operations
     if features_and_target.index.tzinfo is not None:
         features_and_target.index = features_and_target.index.tz_convert('UTC')
     else:
         features_and_target.index = features_and_target.index.tz_localize(
             'UTC')
 
+    # Proceed with the train/test split
     X_train, y_train, X_test, y_test = train_test_split(
         features_and_target, cutoff_date, target_column_name='target_rides_next_hour'
     )
