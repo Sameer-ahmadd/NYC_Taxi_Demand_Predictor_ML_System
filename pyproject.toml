@@ -26,6 +26,7 @@ pytz = "^2024.1"
 streamlit = "1.27.2"
 geopandas = "^0.14.3"
 comet-ml = "^3.44.4"
+fire = "^0.6.0"
 
 
 [build-system]
